@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const app = express();
 const port = 3000;
 
-//MongoDB
 mongoose.connect('mongodb://localhost:27017/formdata', { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
 
@@ -17,10 +16,8 @@ const FormData = mongoose.model('FormData', {
     email: String
 });
 
-// Middleware
 app.use(express.urlencoded({ extended: true }));
 
-//EJS
 app.set('view engine', 'ejs');
 
 app.use(express.static('public'));
