@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+<div class="welcome_message">Welcome</div>
+<div class="side-bar">
+    <button class="Dashboard-btn">Dashboard</button>
+    <div class="device-list" style="display: none;">
+    {% for device in devices %}
+        <p>{{ device['Device Name'] }}</p>
+    {% endfor %}
+</div>
+</div>
+<div class="swiper-container">
+
+    <div class="swiper-button-prev"></div>
+        <div class="swiper-wrapper">
+        {% for device in devices %}
+            <div class="swiper-slide">
+
+                <div class="card">
+                    <div class="progress-bar-container">
+                <div class="progress-bar" style="height: {{ device['Temperatura'] }}%;"></div>
+            </div>
+            <div class="Device_name"><p>{{ device['Device Name'] }}</p></div>
+            <div class="Group_name"><p>{{ device['Group Name'] }}</p></div>
+            <div class="Temperature"><p class="temp">{{ device['Temperatura'] }}°C</p></div>
+                    <div class="triangle-up"></div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="swiper-pagination"></div>
+</div>
+</div>
+<div class="bottom-menu">
+<div class="statics"><canvas id="graf" style="width:100%;max-width:600px"></canvas></div>
+</div>>
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+<script>
+
+var swiper = new Swiper('.swiper-container', {
+    slidesPerView: 'auto',
+    centeredSlides: false,
+    spaceBetween: 10,
+    slideToClickedSlide: true,
+    breakpoints: {
+        640: {
+            slidesPerView: 2,
+            centeredSlides: false,
+            spaceBetween: 20,
+        },
+        768: {
+            slidesPerView: 3,
+            centeredSlides: false,
+            spaceBetween: 30,
+        },
+        1024: {
+            slidesPerView: 4,
+            centeredSlides: false,
+            spaceBetween: 1,
+        },
+        1250: {
+            slidesPerView: 5,
+            centeredSlides: false,
+            spaceBetween: 1,
+        },
+    },
+    navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+    },
+    on: {
+        touchStart: function(event) {
+            var swiper = this;
+            var width = swiper.width;
+            var clickPosition = event.clientX;
+
+            swiper.on('touchEnd', function() {
+                if (clickPosition < width / 2) {
+                    swiper.slidePrev();
+                } else {
+                    swiper.slideNext();
+                }
+            });
+        },
+    },
+});
+window.onload = function() {
+    var minTemp = 0 ;
+    var maxTemp = 60;
+    var temps = document.getElementsByClassName('temp');
+    var progressBars = document.getElementsByClassName('progress-bar');
+    var triangles = document.getElementsByClassName('triangle-up');
+    var devices = document.getElementsByClassName('device-list')[0].children;
+
+    for (var i = 0; i < temps.length; i++) {
+        var tempString = temps[i].innerText;
+        var temp = parseFloat(tempString.slice(0, -2));
+
+        if (isNaN(temp)) {
+            continue; // Пропустить, если temp не является числом
+        }
+
+        var progressBar = progressBars[i];
+        var triangle = triangles[i];
+
+        var normalizedTemp = (temp - minTemp) / (maxTemp - minTemp);
+
+        var gradient = 'linear-gradient(to bottom, #f78569 ' + normalizedTemp * 30 + '%, #6bb0f5 ' + (1 - normalizedTemp) * 70 + '%)';
+
+        progressBar.style.height = normalizedTemp * 100 + '%';
+        progressBar.style.background = gradient;
+
+        if (temp > 20) {
+            triangle.classList.remove('triangle-down');
+            triangle.classList.add('triangle-up');
+            devices[i].classList.add('up');
+        } else {
+            triangle.classList.remove('triangle-up');
+            triangle.classList.add('triangle-down');
+            devices[i].classList.add('down');
+        }
+    }
+}
+
+
+document.querySelector('.Dashboard-btn').addEventListener('click', function() {
+    var deviceList = document.querySelector('.device-list');
+    deviceList.classList.toggle('open');
+    if (deviceList.style.display === 'none') {
+        deviceList.style.display = 'block';
+        deviceList.classList.add('open');
+    } else {
+        deviceList.style.display = 'none';
+        deviceList.classList.remove('open');
+    }
+});
+const xValues = [50,60,70,80,90,100,110,120,130,140,150];
+const yValues = [7,8,8,9,9,9,10,11,14,14,15];
+
+new Chart("<graf></graf>", {
+  type: "line",
+  data: {
+    labels: xValues,
+    datasets: [{
+      fill: false,
+      lineTension: 0,
+      backgroundColor: "rgba(0,0,255,1.0)",
+      borderColor: "rgba(0,0,255,0.1)",
+      data: yValues
+    }]
+  },
+  options: {
+    legend: {display: false},
+    scales: {
+      yAxes: [{ticks: {min: 6, max:16}}],
+    }
+  }
+});
+</script>
+</body>
+</html>
